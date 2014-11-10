@@ -479,7 +479,7 @@ JhipsterGenerator.prototype.app = function app() {
     this.template('src/main/java/package/config/_Constants.java', javaDir + 'config/Constants.java');
     this.template('src/main/java/package/config/_CloudDatabaseConfiguration.java', javaDir + 'config/CloudDatabaseConfiguration.java');
     if (this.databaseType == 'nosql') {
-        this.template('src/main/java/package/config/_CloudMongoDbConfiguration.java', javaDir + 'config/CloudMongoDbConfiguration.java');    
+        this.template('src/main/java/package/config/_CloudMongoDbConfiguration.java', javaDir + 'config/CloudMongoDbConfiguration.java');
     }
     this.template('src/main/java/package/config/_DatabaseConfiguration.java', javaDir + 'config/DatabaseConfiguration.java');
     this.template('src/main/java/package/config/_LocaleConfiguration.java', javaDir + 'config/LocaleConfiguration.java');
@@ -527,6 +527,8 @@ JhipsterGenerator.prototype.app = function app() {
     this.template('src/main/java/package/domain/_PersistentToken.java', javaDir + 'domain/PersistentToken.java');
     this.template('src/main/java/package/domain/_User.java', javaDir + 'domain/User.java');
     this.template('src/main/java/package/domain/util/_CustomLocalDateSerializer.java', javaDir + 'domain/util/CustomLocalDateSerializer.java');
+    this.template('src/main/java/package/domain/util/_CustomDateTimeSerializer.java', javaDir + 'domain/util/CustomDateTimeSerializer.java');
+    this.template('src/main/java/package/domain/util/_CustomDateTimeDeserializer.java', javaDir + 'domain/util/CustomDateTimeDeserializer.java');
 
     this.template('src/main/java/package/repository/_package-info.java', javaDir + 'repository/package-info.java');
     this.template('src/main/java/package/repository/_AuthorityRepository.java', javaDir + 'repository/AuthorityRepository.java');
@@ -656,6 +658,7 @@ JhipsterGenerator.prototype.app = function app() {
     this.angularAppName = _s.camelize(_s.slugify(this.baseName)) + 'App';
     this.copy(webappDir + '/views/activate.html', webappDir + 'views/activate.html');
     this.copy(webappDir + '/views/audits.html', webappDir + 'views/audits.html');
+    this.copy(webappDir + '/views/configuration.html', webappDir + 'views/configuration.html');
     this.copy(webappDir + '/views/docs.html', webappDir + 'views/docs.html');
     this.copy(webappDir + '/views/error.html', webappDir + 'views/error.html');
     this.copy(webappDir + '/views/health.html', webappDir + 'views/health.html');

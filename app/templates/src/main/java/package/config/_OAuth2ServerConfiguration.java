@@ -72,6 +72,7 @@ public class OAuth2ServerConfiguration {
                 .antMatchers("/dump/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/shutdown/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/beans/**").hasAuthority(AuthoritiesConstants.ADMIN)
+                .antMatchers("/configprops/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/info/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/autoconfig/**").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/env/**").hasAuthority(AuthoritiesConstants.ADMIN)
@@ -91,8 +92,8 @@ public class OAuth2ServerConfiguration {
         private static final String PROP_SECRET = "secret";
         private static final String PROP_TOKEN_VALIDITY_SECONDS = "tokenValidityInSeconds";
 
-        private RelaxedPropertyResolver propertyResolver;
-        <% if (databaseType == 'sql') { %>
+        private RelaxedPropertyResolver propertyResolver;<% if (databaseType == 'sql') { %>
+
         @Inject
         private DataSource dataSource;<% } %><% if (databaseType == 'nosql') { %>
 
