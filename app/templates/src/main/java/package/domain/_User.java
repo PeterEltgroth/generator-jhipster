@@ -76,6 +76,12 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)<% } %>
     private Set<PersistentToken> persistentTokens = new HashSet<>();
 
+    <% if (socialAuth == 'yes') { if (databaseType == 'sql') { %>
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "user")<% if (hibernateCache != 'no') { %>
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)<% }} %>
+    private Set<ExternalAccount> externalAccounts = new HashSet<>();
+    <% } %>
+
     public String getLogin() {
         return login;
     }
@@ -156,6 +162,15 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.persistentTokens = persistentTokens;
     }<% } %>
 
+    <% if (socialAuth == 'yes') { %>
+    public Set<ExternalAccount> getExternalAccounts() {
+        return externalAccounts;
+    }
+
+    public void setExternalAccounts(Set<ExternalAccount> externalAccountIds) {
+        this.externalAccounts = externalAccountIds;
+    }<% } %>
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -189,7 +204,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
                 ", email='" + email + '\'' +
                 ", activated='" + activated + '\'' +
                 ", langKey='" + langKey + '\'' +
-                ", activationKey='" + activationKey + '\'' +
+                ", activationKey='" + activationKey + '\'' +<% if(socialAuth == 'yes') { %>
+                ", externalAccounts=" + externalAccounts +<% } %>
                 "}";
     }
 }

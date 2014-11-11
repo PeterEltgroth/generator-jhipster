@@ -45,13 +45,13 @@ JhipsterGenerator.prototype.askFor = function askFor() {
                 if (/^([a-zA-Z0-9_]*)$/.test(input)) return true;
                 return 'Your application name cannot contain special characters or a blank space, using the default name instead';
             },
-            message: '(1/13) What is the base name of your application?',
+            message: '(1/14) What is the base name of your application?',
             default: 'jhipster'
         },
         {
             type: 'list',
             name: 'buildTool',
-            message: '(2/13) Would you like to use Maven or Gradle?',
+            message: '(2/14) Would you like to use Maven or Gradle?',
             choices: [
                 {
                     value: 'maven',
@@ -71,13 +71,13 @@ JhipsterGenerator.prototype.askFor = function askFor() {
                 if (/^([a-z_]{1}[a-z0-9_]*(\.[a-z_]{1}[a-z0-9_]*)*)$/.test(input)) return true;
                 return 'The package name you have provided is not a valid Java package name.';
             },
-            message: '(3/13) What is your default Java package name?',
+            message: '(3/14) What is your default Java package name?',
             default: 'com.mycompany.myapp'
         },
         {
             type: 'list',
             name: 'javaVersion',
-            message: '(4/13) Do you want to use Java 8?',
+            message: '(4/14) Do you want to use Java 8?',
             choices: [
                 {
                     value: '7',
@@ -93,7 +93,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
         {
             type: 'list',
             name: 'authenticationType',
-            message: '(5/13) Which *type* of authentication would you like to use?',
+            message: '(5/14) Which *type* of authentication would you like to use?',
             choices: [
                 {
                     value: 'cookie',
@@ -108,8 +108,66 @@ JhipsterGenerator.prototype.askFor = function askFor() {
         },
         {
             type: 'list',
+            name: 'socialAuth',
+            message: '(6/14) Enable social authentication?',
+            choices: [
+                {
+                    value: 'no',
+                    name: 'No',
+                    checked: true
+                },
+                {
+                    value: 'yes',
+                    name: 'Yes'
+                }
+            ],
+            when: function(answers) {
+                return answers.authenticationType == 'cookie';
+            }
+        },
+        {
+            type: 'list',
+            name: 'socialAuth',
+            message: '(6/14) Enable social authentication?',
+            choices: [
+                {
+                    value: 'no',
+                    name: 'No (this option is only compatible with cookie based authentication)',
+                    checked: true
+                }
+            ],
+            when: function(answers) {
+                return answers.authenticationType != 'cookie';
+            }
+        },
+        {
+            type: 'checkbox',
+            name: 'socialAuthProviders',
+            message: 'Which social authentication providers do you want to enable?',
+            choices: [
+                {
+                    value: 'google',
+                    name: 'Google'
+                },
+                {
+                    value: 'facebook',
+                    name: 'Facebook'
+                }
+            ],
+            when : function(answers) {
+                return answers.socialAuth == 'yes'
+            },
+            validate: function(answer) {
+                if ( answer.length < 1 ) {
+                    return "You must choose at least one social provider.";
+                }
+                return true;
+            }
+        },
+        {
+            type: 'list',
             name: 'databaseType',
-            message: '(6/13) Which *type* of database would you like to use?',
+            message: '(7/14) Which *type* of database would you like to use?',
             choices: [
                 {
                     value: 'sql',
@@ -128,7 +186,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
             },
             type: 'list',
             name: 'hibernateCache',
-            message: '(7/13) Do you want to use Hibernate 2nd level cache?',
+            message: '(8/14) Do you want to use Hibernate 2nd level cache?',
             choices: [
                 {
                     value: 'no',
@@ -151,7 +209,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
             },
             type: 'list',
             name: 'hibernateCache',
-            message: '(7/13) Do you want to use Hibernate 2nd level cache?',
+            message: '(8/14) Do you want to use Hibernate 2nd level cache?',
             choices: [
                 {
                     value: 'no',
@@ -163,7 +221,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
         {
             type: 'list',
             name: 'clusteredHttpSession',
-            message: '(8/13) Do you want to use clustered HTTP sessions?',
+            message: '(9/14) Do you want to use clustered HTTP sessions?',
             choices: [
                 {
                     value: 'no',
@@ -179,7 +237,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
         {
             type: 'list',
             name: 'websocket',
-            message: '(9/13) Do you want to use WebSockets?',
+            message: '(10/14) Do you want to use WebSockets?',
             choices: [
                 {
                     value: 'no',
@@ -198,7 +256,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
             },
             type: 'list',
             name: 'prodDatabaseType',
-            message: '(10/13) Which *production* database would you like to use?',
+            message: '(11/14) Which *production* database would you like to use?',
             choices: [
                 {
                     value: 'mysql',
@@ -217,7 +275,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
             },
             type: 'list',
             name: 'prodDatabaseType',
-            message: '(10/13) Which *production* database would you like to use?',
+            message: '(11/14) Which *production* database would you like to use?',
             choices: [
                 {
                     value: 'mongodb',
@@ -232,7 +290,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
             },
             type: 'list',
             name: 'devDatabaseType',
-            message: '(11/13) Which *development* database would you like to use?',
+            message: '(12/14) Which *development* database would you like to use?',
             choices: [
                 {
                     value: 'h2Memory',
@@ -255,7 +313,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
             },
             type: 'list',
             name: 'devDatabaseType',
-            message: '(11/13) Which *development* database would you like to use?',
+            message: '(12/14) Which *development* database would you like to use?',
             choices: [
                 {
                     value: 'mongodb',
@@ -277,13 +335,13 @@ JhipsterGenerator.prototype.askFor = function askFor() {
                     name: 'Gulp.js'
                 }
             ],
-            message: '(12/13) Would you like to use Grunt or Gulp.js for building the frontend?',
+            message: '(13/14) Would you like to use Grunt or Gulp.js for building the frontend?',
             default: 'grunt'
         },
         {
             type: 'confirm',
             name: 'useCompass',
-            message: '(13/13) Would you like to use the Compass CSS Authoring Framework?',
+            message: '(14/14) Would you like to use the Compass CSS Authoring Framework?',
             default: false
         }
     ];
@@ -306,6 +364,7 @@ JhipsterGenerator.prototype.askFor = function askFor() {
     if (this.baseName != null &&
         this.packageName != null &&
         this.authenticationType != null &&
+        this.socialAuth != null &&
         this.hibernateCache != null &&
         this.clusteredHttpSession != null &&
         this.websocket != null &&
@@ -326,6 +385,8 @@ JhipsterGenerator.prototype.askFor = function askFor() {
             this.baseName = props.baseName;
             this.packageName = props.packageName;
             this.authenticationType = props.authenticationType;
+            this.socialAuth = props.socialAuth;
+            this.socialAuthProviders = props.socialAuthProviders;
             this.hibernateCache = props.hibernateCache;
             this.clusteredHttpSession = props.clusteredHttpSession;
             this.websocket = props.websocket;
@@ -586,6 +647,17 @@ JhipsterGenerator.prototype.app = function app() {
         this.template('src/main/java/package/web/websocket/dto/_package-info.java', javaDir + 'web/websocket/dto/package-info.java');
         this.template('src/main/java/package/web/websocket/dto/_ActivityDTO.java', javaDir + 'web/websocket/dto/ActivityDTO.java');
         this.template('src/main/java/package/web/websocket/dto/_ActivityDTOJacksonDecoder.java', javaDir + 'web/websocket/dto/ActivityDTOJacksonDecoder.java');
+    }
+
+    if (this.socialAuth == 'yes') {
+        this.template('src/main/java/package/config/_SocialConfig.java', javaDir + 'config/SocialConfig.java');
+        this.template('src/main/java/package/domain/_ExternalAccount.java', javaDir + 'domain/ExternalAccount.java');
+        this.template('src/main/java/package/domain/_ExternalAccountProvider.java', javaDir + 'domain/ExternalAccountProvider.java');
+        this.template('src/main/java/package/security/social/_SecurityUtilsUserIdSource.java', javaDir + '/security/social/SecurityUtilsUserIdSource.java');
+        this.template('src/main/java/package/security/social/_SocialConnectionSignUp.java', javaDir + '/security/social/SocialConnectionSignUp.java');
+        this.template('src/main/java/package/security/social/_SocialLoginExceptionMapper.java', javaDir + '/security/social/SocialLoginExceptionMapper.java');
+        this.template('src/main/java/package/security/social/_package-info.java', javaDir + '/security/social/package-info.java');
+
     }
 
     // Create Test Java files

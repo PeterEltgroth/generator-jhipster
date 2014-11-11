@@ -1,6 +1,7 @@
 package <%=packageName%>.service;
 
-import <%=packageName%>.domain.Authority;
+import <%=packageName%>.domain.Authority;<% if (socialAuth == 'yes') { %>
+import <%=packageName%>.domain..ExternalAccount;<% } %>
 import <%=packageName%>.domain.PersistentToken;
 import <%=packageName%>.domain.User;
 import <%=packageName%>.repository.AuthorityRepository;
@@ -8,6 +9,7 @@ import <%=packageName%>.repository.PersistentTokenRepository;
 import <%=packageName%>.repository.UserRepository;
 import <%=packageName%>.security.SecurityUtils;
 import <%=packageName%>.service.util.RandomUtil;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -68,29 +70,48 @@ public class UserService {
         return user;<% } %>
     }
 
-    public User createUserInformation(String login, String password, String firstName, String lastName, String email,
-                                      String langKey) {
+    <% if (socialAuth != 'yes') { %>public <% } %>User createUserInformation(String login, String password, String firstName, String lastName,
+                               String email, String langKey<% if (socialAuth == 'yes') { %>, ExternalAccount externalAccount<% } %>) {
         User newUser = new User();
         Authority authority = authorityRepository.findOne("ROLE_USER");
         Set<Authority> authorities = new HashSet<>();
-        String encryptedPassword = passwordEncoder.encode(password);
+        authorities.add(authority);
+        newUser.setAuthorities(authorities);
+
+        if (StringUtils.isNotBlank(password)) {
+            String encryptedPassword = passwordEncoder.encode(password);
+            newUser.setPassword(encryptedPassword);
+        }<% if (socialAuth == 'yes') { %>
+        else {
+            newUser.getExternalAccounts().add(externalAccount);
+            externalAccount.setUser(newUser);
+        }<% } %>
+
         newUser.setLogin(login);
-        // new user gets initially a generated password
-        newUser.setPassword(encryptedPassword);
         newUser.setFirstName(firstName);
         newUser.setLastName(lastName);
         newUser.setEmail(email);
         newUser.setLangKey(langKey);
+
         // new user is not active
         newUser.setActivated(false);
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
-        authorities.add(authority);
-        newUser.setAuthorities(authorities);
+
         userRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);
         return newUser;
+    }<% if (socialAuth == 'yes') { %>
+
+    public User createUserInformation(String login, String password, String firstName, String lastName, String email,
+                                      String langKey) {
+        return createUserInformation(login, password, firstName, lastName, email, langKey, null);
     }
+
+    public User createUserInformation(String login, String firstName, String lastName, String email,
+                                      String langKey, ExternalAccount externalAccount) {
+        return createUserInformation(login, null, firstName, lastName, email, langKey, externalAccount);
+    }<% } %>
 
     public void updateUserInformation(String firstName, String lastName, String email) {
         User currentUser = userRepository.findOne(SecurityUtils.getCurrentLogin());

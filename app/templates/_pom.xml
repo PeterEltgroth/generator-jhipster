@@ -45,7 +45,8 @@
         <run.addResources>false</run.addResources>
         <sonar-maven-plugin.version>2.2</sonar-maven-plugin.version>
         <spring-cloud.version>1.1.0.RELEASE</spring-cloud.version><% if (authenticationType == 'token') { %>
-        <spring-security-oauth2.version>2.0.1.RELEASE</spring-security-oauth2.version><% } %>
+        <spring-security-oauth2.version>2.0.1.RELEASE</spring-security-oauth2.version><% } if ('google' in socialAuthProviders) { %>
+        <spring-social-google.version>1.0.0.RELEASE</spring-social-google.version><% } %>
         <swagger-springmvc.version>0.8.8</swagger-springmvc.version>
         <usertype-core.version>3.2.0.GA</usertype-core.version>
     </properties>
@@ -352,7 +353,21 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency><% if (authenticationType == 'token') { %>
+        </dependency><% if (socialAuth == 'yes') { %>
+        <dependency>
+            <groupId>org.springframework.social</groupId>
+            <artifactId>spring-social-security</artifactId>
+        </dependency><% } if ('google' in socialAuthProviders) { %>
+        <dependency>
+            <groupId>org.springframework.social</groupId>
+            <artifactId>spring-social-google</artifactId>
+            <version>${spring-social-google.version}</version>
+        </dependency><% } if('facebook' in socialAuthProviders) { %>
+        <dependency>
+            <groupId>org.springframework.social</groupId>
+            <artifactId>spring-social-facebook</artifactId>
+        </dependency>
+        <% } if (authenticationType == 'token') { %>
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
             <artifactId>spring-security-oauth2</artifactId>
