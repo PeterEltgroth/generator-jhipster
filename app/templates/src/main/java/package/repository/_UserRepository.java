@@ -27,6 +27,11 @@ public interface UserRepository extends <% if (databaseType == 'sql') { %>JpaRep
     Optional<User> findOneByLogin(String login);
     void delete(User t);
 
+    <% if (socialAuth == 'yes') { if (databaseType == 'sql') { %>
+    @Query("select u from User u inner join u.externalAccounts ea where ea.externalProvider = ?1 and ea.externalId = ?2")<% } else if (databaseType == 'nosql') { %>
+    @Query("{externalAccounts: { $in: [ {externalProvider: ?0, externalId: ?1} ]}}")<% } %>
+    Optional<User> getUserByExternalAccount(ExternalAccountProvider provider, String externalAccountId);<% } %>
+
 }<% } else { %>
 public interface UserRepository extends <% if (databaseType == 'sql') { %>JpaRepository<User, Long><% } %><% if (databaseType == 'mongodb') { %>MongoRepository<User, String><% } %> {
 
@@ -38,4 +43,8 @@ public interface UserRepository extends <% if (databaseType == 'sql') { %>JpaRep
 
     User findOneByEmail(String email);
 
+    <% if (socialAuth == 'yes') { if (databaseType == 'sql') { %>
+    @Query("select u from User u inner join u.externalAccounts ea where ea.externalProvider = ?1 and ea.externalId = ?2")<% } else if (databaseType == 'nosql') { %>
+    @Query("{externalAccounts: { $in: [ {externalProvider: ?0, externalId: ?1} ]}}")<% } %>
+    User getUserByExternalAccount(ExternalAccountProvider provider, String externalAccountId);<% } %>
 }<% } %>

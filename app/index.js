@@ -92,6 +92,64 @@ JhipsterGenerator.prototype.askFor = function askFor() {
         },
         {
             type: 'list',
+            name: 'socialAuth',
+            message: '(4/13) Enable social authentication?',
+            choices: [
+                {
+                    value: 'no',
+                    name: 'No',
+                    checked: true
+                },
+                {
+                    value: 'yes',
+                    name: 'Yes'
+                }
+            ],
+            when: function(answers) {
+                return answers.authenticationType == 'cookie';
+            }
+        },
+        {
+            type: 'list',
+            name: 'socialAuth',
+            message: '(4/13) Enable social authentication?',
+            choices: [
+                {
+                    value: 'no',
+                    name: 'No (this option is only compatible with cookie based authentication)',
+                    checked: true
+                }
+            ],
+            when: function(answers) {
+                return answers.authenticationType != 'cookie';
+            }
+        },
+        {
+            type: 'checkbox',
+            name: 'socialAuthProviders',
+            message: '(4/13) Which social authentication providers do you want to enable?',
+            choices: [
+                {
+                    value: 'google',
+                    name: 'Google'
+                },
+                {
+                    value: 'facebook',
+                    name: 'Facebook'
+                }
+            ],
+            when : function(answers) {
+                return answers.socialAuth == 'yes'
+            },
+            validate: function(answer) {
+                if ( answer.length < 1 ) {
+                    return "You must choose at least one social provider.";
+                }
+                return true;
+            }
+        },
+        {
+            type: 'list',
             name: 'databaseType',
             message: '(5/13) Which *type* of database would you like to use?',
             choices: [
@@ -291,6 +349,8 @@ JhipsterGenerator.prototype.askFor = function askFor() {
     this.baseName = this.config.get('baseName');
     this.packageName = this.config.get('packageName');
     this.authenticationType = this.config.get('authenticationType');
+    this.socialAuth = this.config.get('socialAuth');
+    this.socialAuthProviders = this.config.get('socialAuthProviders');
     this.hibernateCache = this.config.get('hibernateCache');
     this.clusteredHttpSession = this.config.get('clusteredHttpSession');
     this.websocket = this.config.get('websocket');
@@ -306,6 +366,8 @@ JhipsterGenerator.prototype.askFor = function askFor() {
     if (this.baseName != null &&
         this.packageName != null &&
         this.authenticationType != null &&
+        this.socialAuth != null &&
+        this.socialAuthProviders != null &&
         this.hibernateCache != null &&
         this.clusteredHttpSession != null &&
         this.websocket != null &&
@@ -326,6 +388,8 @@ JhipsterGenerator.prototype.askFor = function askFor() {
             this.baseName = props.baseName;
             this.packageName = props.packageName;
             this.authenticationType = props.authenticationType;
+            this.socialAuth = props.socialAuth;
+            this.socialAuthProviders = props.socialAuthProviders;
             this.hibernateCache = props.hibernateCache;
             this.clusteredHttpSession = props.clusteredHttpSession;
             this.websocket = props.websocket;
@@ -563,6 +627,17 @@ JhipsterGenerator.prototype.app = function app() {
         this.template('src/main/java/package/web/websocket/_ActivityService.java', javaDir + 'web/websocket/ActivityService.java', this, {});
         this.template('src/main/java/package/web/websocket/dto/_package-info.java', javaDir + 'web/websocket/dto/package-info.java', this, {});
         this.template('src/main/java/package/web/websocket/dto/_ActivityDTO.java', javaDir + 'web/websocket/dto/ActivityDTO.java', this, {});
+    }
+
+    if (this.socialAuth == 'yes') {
+        this.template('src/main/java/package/config/_SocialConfig.java', javaDir + 'config/SocialConfig.java');
+        this.template('src/main/java/package/domain/_ExternalAccount.java', javaDir + 'domain/ExternalAccount.java');
+        this.template('src/main/java/package/domain/_ExternalAccountProvider.java', javaDir + 'domain/ExternalAccountProvider.java');
+        this.template('src/main/java/package/security/social/_SecurityUtilsUserIdSource.java', javaDir + '/security/social/SecurityUtilsUserIdSource.java');
+        this.template('src/main/java/package/security/social/_SocialConnectionSignUp.java', javaDir + '/security/social/SocialConnectionSignUp.java');
+        this.template('src/main/java/package/security/social/_SocialLoginExceptionMapper.java', javaDir + '/security/social/SocialLoginExceptionMapper.java');
+        this.template('src/main/java/package/security/social/_package-info.java', javaDir + '/security/social/package-info.java');
+
     }
 
     // Create Test Java files

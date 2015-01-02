@@ -4,7 +4,9 @@ import <%=packageName%>.security.*;
 import <%=packageName%>.web.filter.CsrfCookieGeneratorFilter;<% } %>
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;<% if (authenticationType == 'cookie') { %>
-import org.springframework.core.env.Environment;<% } %><% if (authenticationType == 'token') { %>
+import org.springframework.core.env.Environment;<% } %><% if (socialAuth == 'yes') { %>
+import org.springframework.security.config.annotation.ObjectPostProcessor;
+<% } %><% if (authenticationType == 'token') { %>
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;<% } %>
 <% if (authenticationType == 'token') { %>
 import org.springframework.security.authentication.AuthenticationManager;<% } %>
@@ -20,7 +22,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;<% if (authenticationType == 'cookie') { %>
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.csrf.CsrfFilter;<% } %><% if (authenticationType == 'token') { %>
-import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;<% } %>
+import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;<% } %><% if (socialAuth == 'yes') { %>
+import org.springframework.social.security.SocialAuthenticationException;
+import org.springframework.social.security.SocialAuthenticationFilter;
+import org.springframework.social.security.SpringSocialConfigurer;
+<%}%>
 
 import javax.inject.Inject;
 
@@ -59,7 +65,40 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {<% if (
         auth
             .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
-    }
+    }<% if (socialAuth == 'yes') { %>
+
+    /**
+     * Build a configurer that can be applied to an HttpSecurity instance. When the configurer is applied,
+     * Spring Social Security's {@link org.springframework.social.security.SocialAuthenticationFilter}
+     * will be added to the HttpSecurity's SecurityFilterChain.
+     *
+     * @return
+     */
+    protected SpringSocialConfigurer buildSpringSocialConfigurer() {
+        // build an AuthenticationFailureHandler that is aware of our own exception types
+        final SocialLoginExceptionMapper handler = new SocialLoginExceptionMapper("/#/register-external")
+            .add(SocialAuthenticationException.class, "/#/register-external/rejected")
+            .add(UserNotActivatedException.class, "/#/activate");
+
+        SpringSocialConfigurer configurer = new SpringSocialConfigurer()
+            .postLoginUrl("/")
+            .alwaysUsePostLoginUrl(true);
+
+        // configure options not available using the standard configurer
+        configurer.addObjectPostProcessor(
+            new ObjectPostProcessor<SocialAuthenticationFilter>() {
+                public SocialAuthenticationFilter postProcess(SocialAuthenticationFilter object) {
+                    // replace the default exception
+                    object.setAuthenticationFailureHandler(handler);
+
+                    object.setSignupUrl("/#/register-external");
+                    return object;
+                }
+            }
+        );
+
+        return configurer;
+    }<% } %>
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -98,7 +137,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {<% if (
             .logoutUrl("/api/logout")
             .logoutSuccessHandler(ajaxLogoutSuccessHandler)
             .deleteCookies("JSESSIONID", "hazelcast.sessionId", "CSRF-TOKEN")
-            .permitAll()
+            .permitAll()<% if (socialAuth == 'yes') { %>
+        .and()
+            .apply(buildSpringSocialConfigurer())<% } %>
         .and()
             .headers()
             .frameOptions()

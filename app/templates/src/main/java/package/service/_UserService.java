@@ -70,30 +70,48 @@ public class UserService {
         return user;
     }<% } %>
 
-    public User createUserInformation(String login, String password, String firstName, String lastName, String email,
-                                      String langKey) {
+    User createUserInformation(String login, String password, String firstName, String lastName,
+                               String email, String langKey, ExternalAccount externalAccount) {
         User newUser = new User();
         Authority authority = authorityRepository.findOne("ROLE_USER");
         Set<Authority> authorities = new HashSet<>();
-        String encryptedPassword = passwordEncoder.encode(password);
+        authorities.add(authority);
+        newUser.setAuthorities(authorities);
+
+        if (StringUtils.isNotBlank(password)) {
+            String encryptedPassword = passwordEncoder.encode(password);
+            newUser.setPassword(encryptedPassword);
+        }
+        else {
+            newUser.getExternalAccounts().add(externalAccount);
+            externalAccount.setUser(newUser);
+        }
+
         newUser.setLogin(login);
-        // new user gets initially a generated password
-        newUser.setPassword(encryptedPassword);
         newUser.setFirstName(firstName);
         newUser.setLastName(lastName);
         newUser.setEmail(email);
         newUser.setLangKey(langKey);
+
         // new user is not active
         newUser.setActivated(false);
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
-        authorities.add(authority);
-        newUser.setAuthorities(authorities);
+
         userRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);
         return newUser;
     }
 
+    public User createUserInformation(String login, String password, String firstName, String lastName, String email,
+                                      String langKey) {
+        return createUserInformation(login, password, firstName, lastName, email, langKey, null);
+    }<% if (socialAuth == 'yes') { %>
+    public User createUserInformation(String login, String firstName, String lastName, String email,
+                                      String langKey, ExternalAccount externalAccount) {
+        return createUserInformation(login, null, firstName, lastName, email, langKey, externalAccount);
+    }
+    <% } %>
     public void updateUserInformation(String firstName, String lastName, String email) {<% if (javaVersion == '8') { %>
         userRepository.findOneByLogin(SecurityUtils.getCurrentLogin()).ifPresent(u -> {
             u.setFirstName(firstName);
