@@ -35,17 +35,15 @@ public class UserDetailsService implements org.springframework.security.core.use
     @Inject
     private UserRepository userRepository;
 
-    @Override
-    @Transactional
     private User getUser(final String login) {
         String lowercaseLogin = login.toLowerCase();<%if (javaVersion == '8') {%>
-        Optional<User> userFromDatabase =  userRepository.findOneByLogin(lowercaseLogin)
+        User userFromDatabase =  userRepository.findOneByLogin(lowercaseLogin)
             .orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the database"));
-        if (!userFromDatabase.get().getActivated()) {
+        if (!userFromDatabase.getActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
         }
-        return userFromDatabase.get();
-        }<%} else {%>
+        return userFromDatabase;
+        <%} else {%>
         User userFromDatabase = userRepository.findOneByLogin(lowercaseLogin);
         if (userFromDatabase == null) {
             throw new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the database");
@@ -85,7 +83,7 @@ public class UserDetailsService implements org.springframework.security.core.use
         Collection<GrantedAuthority> grantedAuthorities = getGrantedAuthorities(user);
         log.debug("Login successful");
         return new org.springframework.security.core.userdetails.User(user.getLogin(), user.getPassword(), grantedAuthorities);
-    }
+    }<% if (socialAuth == 'yes') { %>
 
     @Override
     @Transactional(readOnly = true)
@@ -95,5 +93,5 @@ public class UserDetailsService implements org.springframework.security.core.use
         Collection<GrantedAuthority> grantedAuthorities = getGrantedAuthorities(user);
         log.debug("Login successful");
         return new SocialUser(user.getLogin(), "n/a", grantedAuthorities);
-    }
+    }<% } %>
 }

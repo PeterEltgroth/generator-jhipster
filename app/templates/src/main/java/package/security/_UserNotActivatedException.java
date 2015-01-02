@@ -1,6 +1,6 @@
 package <%=packageName%>.security;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * This exception is throw in case of a not activated user trying to authenticate.

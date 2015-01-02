@@ -1,5 +1,7 @@
 package <%=packageName%>.repository;
 
+<% if (socialAuth == 'yes') { %>
+import com.mycompany.myapp.domain.ExternalAccountProvider; <% } %>
 import <%=packageName%>.domain.User;
 
 import org.joda.time.DateTime;<% if (databaseType == 'sql') { %>

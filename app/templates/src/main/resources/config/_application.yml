@@ -25,8 +25,19 @@ spring:
         from: <%= baseName %>@localhost
 
     messageSource:
-        cacheSeconds: 1<% if (authenticationType == 'token') { %>
+        cacheSeconds: 1<% if (socialAuth == 'yes') { %>
 
+    social:<% if(_.indexOf(socialAuthProviders, 'google') > -1) { %>
+         # see https://developers.google.com//web/signin/server-side-flow#step_1_create_a_client_id_and_client_secret
+         google:
+             clientId: your_id.apps.googleusercontent.com
+             clientSecret: your_client_secret<% } if(_.indexOf(socialAuthProviders, 'facebook') > -1) { %>
+
+    facebook:
+             clientId: your_id
+             clientSecret: your_client_secret<% }} %>
+
+<% if (authenticationType == 'token') { %>
 authentication:
     oauth:
         clientid: <%= baseName %>app

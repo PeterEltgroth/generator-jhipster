@@ -44,7 +44,7 @@ public class SocialConnectionSignUp implements ConnectionSignUp {
         String externalId = key.getProviderUserId();
 
         // try to find an internal user based on the social ConnectionKey.  for example, something like "google" "12345691011".
-        User user = userRepository.getUserByExternalAccount(externalProvider, externalId);
+        User user = userRepository.getUserByExternalAccount(externalProvider, externalId)<% if (javaVersion == '8') { %>.orElse(null)<% } %>;
         if (user != null) {
             String internalLogin = user.getLogin();
             log.debug("Returning existing internal User '{}' for external login '{}' from {}", internalLogin, externalId, externalProvider);

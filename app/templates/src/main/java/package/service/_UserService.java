@@ -1,6 +1,8 @@
 package <%=packageName%>.service;
 
-import <%=packageName%>.domain.Authority;<% if (authenticationType == 'cookie') { %>
+import <%=packageName%>.domain.Authority;<% if (socialAuth == 'yes') { %>
+import com.mycompany.myapp.domain.ExternalAccount;<% } %>
+<% if (authenticationType == 'cookie') { %>
 import <%=packageName%>.domain.PersistentToken;<% } %>
 import <%=packageName%>.domain.User;
 import <%=packageName%>.repository.AuthorityRepository;<% if (authenticationType == 'cookie') { %>
@@ -8,6 +10,7 @@ import <%=packageName%>.repository.PersistentTokenRepository;<% } %>
 import <%=packageName%>.repository.UserRepository;
 import <%=packageName%>.security.SecurityUtils;
 import <%=packageName%>.service.util.RandomUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;

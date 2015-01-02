@@ -3,6 +3,7 @@ var util = require('util'),
     path = require('path'),
     yeoman = require('yeoman-generator'),
     chalk = require('chalk'),
+    _ = require('underscore'),
     _s = require('underscore.string'),
     shelljs = require('shelljs'),
     scriptBase = require('../script-base'),
@@ -407,7 +408,6 @@ JhipsterGenerator.prototype.askFor = function askFor() {
 };
 
 JhipsterGenerator.prototype.app = function app() {
-
     var packageFolder = this.packageName.replace(/\./g, '/');
     var javaDir = 'src/main/java/' + packageFolder + '/';
     var resourceDir = 'src/main/resources/';
