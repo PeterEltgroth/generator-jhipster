@@ -1,14 +1,13 @@
 package <%=packageName%>.config;
 <% if (authenticationType == 'cookie') { %>
-import <%=packageName%>.security.*;<% } if (socialAuth == 'yes') { %>
-import <%=packageName%>.security.social*;<% } %>
+import <%=packageName%>.security.*;
+import <%=packageName%>.web.filter.CsrfCookieGeneratorFilter;<% } %>
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;<% if (authenticationType == 'cookie') { %>
 import org.springframework.core.env.Environment;<% } %><% if (authenticationType == 'token') { %>
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;<% } %>
 <% if (authenticationType == 'token') { %>
-import org.springframework.security.authentication.AuthenticationManager;<% } if (socialAuth == 'yes') { %>
-import org.springframework.security.config.annotation.ObjectPostProcessor;<% } %>
+import org.springframework.security.authentication.AuthenticationManager;<% } %>
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;<% if (authenticationType == 'cookie') { %>
@@ -19,11 +18,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;<% if (authenticationType == 'cookie') { %>
-import org.springframework.security.web.authentication.RememberMeServices;<% } %><% if (authenticationType == 'token') { %>
-import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;<% } if (socialAuth == 'yes') { %>
-import org.springframework.social.security.SocialAuthenticationException;
-import org.springframework.social.security.SocialAuthenticationFilter;
-import org.springframework.social.security.SpringSocialConfigurer;<% } %>
+import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.csrf.CsrfFilter;<% } %><% if (authenticationType == 'token') { %>
+import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;<% } %>
 
 import javax.inject.Inject;
 
@@ -62,60 +59,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {<% if (
         auth
             .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
-    }<% if (socialAuth == 'yes') { %>
-
-    /**
-     * Build a configurer that can be applied to an HttpSecurity instance.  When the configurer is applied,
-     * Spring Social Security's {@link org.springframework.social.security.SocialAuthenticationFilter}
-     * will be added to the HttpSecurity's SecurityFilterChain.
-     * @return
-     */
-    protected SpringSocialConfigurer buildSpringSocialConfigurer() {
-        // build an AuthenticationFailureHandler that is aware of our own exception types
-        final SocialLoginExceptionMapper handler = new SocialLoginExceptionMapper("/#/register-external")
-            .add(SocialAuthenticationException.class, "/#/register-external/rejected")
-            .add(UserNotActivatedException.class, "/#/activate");
-
-        SpringSocialConfigurer configurer = new SpringSocialConfigurer()
-            .postLoginUrl("/")
-            .alwaysUsePostLoginUrl(true);
-
-        // configure options not available using the standard configurer
-        configurer.addObjectPostProcessor(
-            new ObjectPostProcessor<SocialAuthenticationFilter>() {
-                public SocialAuthenticationFilter postProcess(SocialAuthenticationFilter object) {
-                    // replace the default exception
-                    object.setAuthenticationFailureHandler(handler);
-
-                    object.setSignupUrl("/#/register-external");
-                    return object;
-                }
-            }
-        );
-
-        return configurer;
-    }<% } %>
+    }
 
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
+            .antMatchers("/scripts/**/*.{js,html}")
             .antMatchers("/bower_components/**")
-            .antMatchers("/fonts/**")
-            .antMatchers("/images/**")
-            .antMatchers("/scripts/**")
-            .antMatchers("/styles/**")
-            .antMatchers("/views/**")
             .antMatchers("/i18n/**")
+            .antMatchers("/assets/**")
             .antMatchers("/swagger-ui/**")<% if (authenticationType == 'token') { %>
-            .antMatchers("/app/rest/register")
-            .antMatchers("/app/rest/activate")<% if (websocket == 'atmosphere') { %>
-            .antMatchers("/websocket/activity")<% } %><% } %><% if (devDatabaseType != 'h2Memory') { %>;<% } else { %>
+            .antMatchers("/api/register")
+            .antMatchers("/api/activate")<% } %>
+            .antMatchers("/test/**")<% if (devDatabaseType != 'h2Memory') { %>;<% } else { %>
             .antMatchers("/console/**");<% } %>
     }<% if (authenticationType == 'cookie') { %>
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+            .addFilterAfter(new CsrfCookieGeneratorFilter(), CsrfFilter.class)
             .exceptionHandling()
             .authenticationEntryPoint(authenticationEntryPoint)
         .and()
@@ -124,33 +87,28 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {<% if (
             .key(env.getProperty("jhipster.security.rememberme.key"))
         .and()
             .formLogin()
-            .loginProcessingUrl("/app/authentication")
+            .loginProcessingUrl("/api/authentication")
             .successHandler(ajaxAuthenticationSuccessHandler)
             .failureHandler(ajaxAuthenticationFailureHandler)
             .usernameParameter("j_username")
             .passwordParameter("j_password")
-            .permitAll()<% if (socialAuth == 'yes') { %>
-        .and()
-            .apply(buildSpringSocialConfigurer())<% } %>
-        .and()
-            .logout()
-            .logoutUrl("/app/logout")
-            .logoutSuccessHandler(ajaxLogoutSuccessHandler)
-            .deleteCookies("JSESSIONID")
             .permitAll()
         .and()
-            .csrf()
-            .disable()
+            .logout()
+            .logoutUrl("/api/logout")
+            .logoutSuccessHandler(ajaxLogoutSuccessHandler)
+            .deleteCookies("JSESSIONID", "hazelcast.sessionId", "CSRF-TOKEN")
+            .permitAll()
+        .and()
             .headers()
             .frameOptions()
             .disable()
             .authorizeRequests()
-                .antMatchers("/app/rest/register").permitAll()
-                .antMatchers("/app/rest/activate").permitAll()
-                .antMatchers("/app/rest/authenticate").permitAll()
-                .antMatchers("/app/rest/logs/**").hasAuthority(AuthoritiesConstants.ADMIN)
-                .antMatchers("/app/**").authenticated()<% if (socialAuth == 'yes') { %>
-                .antMatchers("/auth/**").permitAll()<% } if (websocket == 'atmosphere') { %>
+                .antMatchers("/api/register").permitAll()
+                .antMatchers("/api/activate").permitAll()
+                .antMatchers("/api/authenticate").permitAll()
+                .antMatchers("/api/logs/**").hasAuthority(AuthoritiesConstants.ADMIN)
+                .antMatchers("/api/**").authenticated()<% if (websocket == 'spring-websocket') { %>
                 .antMatchers("/websocket/tracker").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/websocket/**").permitAll()<% } %>
                 .antMatchers("/metrics/**").hasAuthority(AuthoritiesConstants.ADMIN)
@@ -169,11 +127,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {<% if (
 
     }<% } %><% if (authenticationType == 'token') { %>
 
-	@Override
-	@Bean
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
-	}<% } %>
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }<% } %>
 
     @EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true)
     private static class GlobalSecurityConfiguration extends GlobalMethodSecurityConfiguration {<% if (authenticationType == 'token') { %>

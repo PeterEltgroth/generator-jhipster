@@ -19,7 +19,7 @@ import java.util.Optional;<% } %>
  * REST controller for managing <%= entityClass %>.
  */
 @RestController
-@RequestMapping("/app")
+@RequestMapping("/api")
 public class <%= entityClass %>Resource {
 
     private final Logger log = LoggerFactory.getLogger(<%= entityClass %>Resource.class);
@@ -28,9 +28,9 @@ public class <%= entityClass %>Resource {
     private <%= entityClass %>Repository <%= entityInstance %>Repository;
 
     /**
-     * POST  /rest/<%= entityInstance %>s -> Create a new <%= entityInstance %>.
+     * POST  /<%= entityInstance %>s -> Create a new <%= entityInstance %>.
      */
-    @RequestMapping(value = "/rest/<%= entityInstance %>s",
+    @RequestMapping(value = "/<%= entityInstance %>s",
             method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
@@ -40,9 +40,9 @@ public class <%= entityClass %>Resource {
     }
 
     /**
-     * GET  /rest/<%= entityInstance %>s -> get all the <%= entityInstance %>s.
+     * GET  /<%= entityInstance %>s -> get all the <%= entityInstance %>s.
      */
-    @RequestMapping(value = "/rest/<%= entityInstance %>s",
+    @RequestMapping(value = "/<%= entityInstance %>s",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
@@ -52,13 +52,13 @@ public class <%= entityClass %>Resource {
     }
 
     /**
-     * GET  /rest/<%= entityInstance %>s/:id -> get the "id" <%= entityInstance %>.
+     * GET  /<%= entityInstance %>s/:id -> get the "id" <%= entityInstance %>.
      */
-    @RequestMapping(value = "/rest/<%= entityInstance %>s/{id}",
+    @RequestMapping(value = "/<%= entityInstance %>s/{id}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
-    public ResponseEntity<<%= entityClass %>> get(@PathVariable <% if (databaseType == 'sql') { %>Long<% } %><% if (databaseType == 'nosql') { %>String<% } %> id<% if (javaVersion == '7') { %>, HttpServletResponse response<% } %>) {
+    public ResponseEntity<<%= entityClass %>> get(@PathVariable <% if (databaseType == 'sql') { %>Long<% } %><% if (databaseType == 'mongodb') { %>String<% } %> id<% if (javaVersion == '7') { %>, HttpServletResponse response<% } %>) {
         log.debug("REST request to get <%= entityClass %> : {}", id);<% if (javaVersion == '8') { %>
         return Optional.ofNullable(<%= entityInstance %>Repository.<% if (fieldsContainOwnerManyToMany == true) { %>findOneWithEagerRelationships<% } else { %>findOne<% } %>(id))
             .map(<%= entityInstance %> -> new ResponseEntity<>(
@@ -73,13 +73,13 @@ public class <%= entityClass %>Resource {
     }
 
     /**
-     * DELETE  /rest/<%= entityInstance %>s/:id -> delete the "id" <%= entityInstance %>.
+     * DELETE  /<%= entityInstance %>s/:id -> delete the "id" <%= entityInstance %>.
      */
-    @RequestMapping(value = "/rest/<%= entityInstance %>s/{id}",
+    @RequestMapping(value = "/<%= entityInstance %>s/{id}",
             method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
-    public void delete(@PathVariable <% if (databaseType == 'sql') { %>Long<% } %><% if (databaseType == 'nosql') { %>String<% } %> id) {
+    public void delete(@PathVariable <% if (databaseType == 'sql') { %>Long<% } %><% if (databaseType == 'mongodb') { %>String<% } %> id) {
         log.debug("REST request to delete <%= entityClass %> : {}", id);
         <%= entityInstance %>Repository.delete(id);
     }

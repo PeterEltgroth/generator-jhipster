@@ -1,6 +1,6 @@
 package <%=packageName%>.web.rest;
 
-import <%=packageName%>.Application;<% if (databaseType == 'nosql') { %>
+import <%=packageName%>.Application;<% if (databaseType == 'mongodb') { %>
 import <%=packageName%>.config.MongoConfiguration;<% } %>
 import <%=packageName%>.domain.Authority;
 import <%=packageName%>.domain.User;
@@ -12,7 +12,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.SpringApplicationConfiguration;<% if (databaseType == 'nosql') { %>
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;<% if (databaseType == 'mongodb') { %>
 import org.springframework.context.annotation.Import;<% } %>
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -41,7 +42,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
-@WebAppConfiguration<% if (databaseType == 'nosql') { %>
+@WebAppConfiguration
+@IntegrationTest<% if (databaseType == 'mongodb') { %>
 @Import(MongoConfiguration.class)<% } %>
 public class AccountResourceTest {
 
@@ -64,7 +66,7 @@ public class AccountResourceTest {
 
     @Test
     public void testNonAuthenticatedUser() throws Exception {
-        restUserMockMvc.perform(get("/app/rest/authenticate")
+        restUserMockMvc.perform(get("/api/authenticate")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(""));
@@ -73,7 +75,7 @@ public class AccountResourceTest {
 
     @Test
     public void testAuthenticatedUser() throws Exception {
-        restUserMockMvc.perform(get("/app/rest/authenticate")
+        restUserMockMvc.perform(get("/api/authenticate")
                 .with(<% if (javaVersion == '8') { %>request -> {
                     request.setRemoteUser("test");
                     return request;<% } else { %>new RequestPostProcessor() {
@@ -102,7 +104,7 @@ public class AccountResourceTest {
         user.setAuthorities(authorities);
         when(userService.getUserWithAuthorities()).thenReturn(user);
 
-        restUserMockMvc.perform(get("/app/rest/account")
+        restUserMockMvc.perform(get("/api/account")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -117,7 +119,7 @@ public class AccountResourceTest {
     public void testGetUnknownAccount() throws Exception {
         when(userService.getUserWithAuthorities()).thenReturn(null);
 
-        restUserMockMvc.perform(get("/app/rest/account")
+        restUserMockMvc.perform(get("/api/account")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
     }
