@@ -77,8 +77,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {<% if (
      */
     protected SpringSocialConfigurer buildSpringSocialConfigurer() {
         // build an AuthenticationFailureHandler that is aware of our own exception types
-        final SocialLoginExceptionMapper handler = new SocialLoginExceptionMapper("/#/register-external")
-            .add(SocialAuthenticationException.class, "/#/register-external/rejected")
+        final SocialLoginExceptionMapper handler = new SocialLoginExceptionMapper("/#/register/external")
+            .add(SocialAuthenticationException.class, "/#/register/external/rejected")
             .add(UserNotActivatedException.class, "/#/activate");
 
         SpringSocialConfigurer configurer = new SpringSocialConfigurer()
@@ -92,7 +92,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {<% if (
                     // replace the default exception
                     object.setAuthenticationFailureHandler(handler);
 
-                    object.setSignupUrl("/#/register-external");
+                    object.setSignupUrl("/#/register/external");
                     return object;
                 }
             }

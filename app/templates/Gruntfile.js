@@ -134,8 +134,7 @@ module.exports = function (grunt) {
                  }<% } if (socialAuth == 'yes') { %>,
                  {
                     context: '/auth',
-                    host
-                    'localhost',
+                    host: 'localhost',
                     port: 8080,
                     https: false,
                     changeOrigin: false

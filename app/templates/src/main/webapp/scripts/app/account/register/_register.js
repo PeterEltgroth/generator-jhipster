@@ -4,8 +4,10 @@ angular.module('<%=angularAppName%>')
     .config(function ($stateProvider) {
         $stateProvider
             .state('register', {
+                abstract: 'true',
                 parent: 'account',
                 url: '/register',
+                templateUrl: 'scripts/app/account/register/register.html',
                 data: {
                     roles: []
                 },
@@ -14,6 +16,7 @@ angular.module('<%=angularAppName%>')
                         templateUrl: 'scripts/app/account/register/register.html',
                         controller: 'RegisterController'
                     }
+
                 },
                 resolve: {
                     translatePartialLoader: ['$translate', '$translatePartialLoader', function ($translate, $translatePartialLoader) {
@@ -21,5 +24,24 @@ angular.module('<%=angularAppName%>')
                         return $translate.refresh();
                     }]
                 }
-            });
+            })
+            .state('register.default', {
+                url: '',
+                views: {
+                    'registerContent@register': {
+                        templateUrl: 'scripts/app/account/register/register.default.html'
+                    }
+
+                }
+            })<% if (socialAuth == 'yes') { %>
+            .state('register.external', {
+                url: '/external',
+                views: {
+                    'registerContent@register': {
+                        templateUrl: 'scripts/app/account/register/external/register.external.html',
+                        controller: 'RegisterExternalController'
+                    }
+
+                }
+            })<% } %>;
     });

@@ -12,7 +12,10 @@
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
         <!-- build:css assets/styles/main.css -->
         <% if (!useCompass) { %><link rel="stylesheet" href="assets/styles/bootstrap.css">
-        <% } %><link rel="stylesheet" href="assets/styles/main.css">
+        <% } %><link rel="stylesheet" href="assets/styles/main.css"><% if (socialAuth == 'yes') { %>
+        <link rel="stylesheet" href="bower_components/bootstrap-social/bootstrap-social.css">
+        <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
+        <% } %>
         <!-- endbuild -->
     </head>
     <body ng-app="<%= angularAppName %>">

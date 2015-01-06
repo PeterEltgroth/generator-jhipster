@@ -134,11 +134,11 @@ public class AccountResource {
     }
 
     /**
-     * GET /rest/register -> get the details of an ongoing registration
+     * GET /register -> get the details of an ongoing registration
      * @param request
      * @return 200 OK or 404 if there is no ongoing registration
      */
-    @RequestMapping(value = "/rest/register",
+    @RequestMapping(value = "/register",
         method = RequestMethod.GET,
         produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
@@ -165,16 +165,13 @@ public class AccountResource {
         if (existingUser != null)
             return new ResponseEntity<>("The external login is already linked to another User", HttpStatus.BAD_REQUEST);
 
-        // use the email supplied by the user, falling back on the email retrieved from
-        // the social login
-        String email;
-        if (StringUtils.isNotBlank(currentRequestDTO.getEmail()))
-            email = currentRequestDTO.getEmail();
-        else
-            email = externalAuthDTO.getEmail();
-
-        User user = userService.createUserInformation(currentRequestDTO.getLogin(), externalAuthDTO.getFirstName(),
-            externalAuthDTO.getLastName(), email.toLowerCase(), currentRequestDTO.getLangKey(), externalAccount);
+        User user = userService.createUserInformation(
+            currentRequestDTO.getLogin(),
+            externalAuthDTO.getFirstName(), externalAuthDTO.getLastName(),
+            externalAuthDTO.getEmail().toLowerCase(),
+            currentRequestDTO.getLangKey(),
+            externalAccount
+        );
         sendActivationEmail(user, request);
 
         // cleanup the social stuff that we've been keeping in the session
@@ -199,32 +196,17 @@ public class AccountResource {
         method = RequestMethod.POST,
         produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed
-    public ResponseEntity<?> registerAccount(@Valid @RequestBody UserDTO userDTO, HttpServletRequest request) {<% if (javaVersion == '8') { %>
-        return userRepository.findOneByLogin(userDTO.getLogin())
-            .map(user -> new ResponseEntity<>("login already in use", HttpStatus.BAD_REQUEST))
-            .orElseGet(() -> userRepository.findOneByEmail(userDTO.getEmail())
-                    .map(user -> new ResponseEntity<>("e-mail address already in use", HttpStatus.BAD_REQUEST))
-                    .orElseGet(() -> {
-                        User user = userService.createUserInformation(userDTO.getLogin(), userDTO.getPassword(),
-                            userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail().toLowerCase(),
-                            userDTO.getLangKey());
-                        sendActivationEmail(user, request);
-                        return new ResponseEntity<>(HttpStatus.CREATED);
-                    })
-            );<% } else { %>
-        User user = userRepository.findOneByLogin(userDTO.getLogin());
-        if (user != null) {
-            return ResponseEntity.badRequest().contentType(MediaType.TEXT_PLAIN).body("login already in use");
-        } else {
-            if (userRepository.findOneByEmail(userDTO.getEmail()) != null) {
-                return ResponseEntity.badRequest().contentType(MediaType.TEXT_PLAIN).body("e-mail address already in use");
-            }
-            user = userService.createUserInformation(userDTO.getLogin(), userDTO.getPassword(),
-                userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail().toLowerCase(),
-                userDTO.getLangKey());
-            sendActivationEmail(user, request);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-        }<% } %>
+    public ResponseEntity<?> registerAccount(@Valid @RequestBody UserDTO userDTO, HttpServletRequest request) {
+        if (isSocialRegistration(request)) {
+            return registerExternalAccount(userDTO, request);
+        }
+        else {
+        User user = userService.createUserInformation(userDTO.getLogin(), userDTO.getPassword(),
+            userDTO.getFirstName(), userDTO.getLastName(), userDTO.getEmail().toLowerCase(),
+            userDTO.getLangKey());
+        sendActivationEmail(user, request);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
     }
     /**
      * GET  /activate -> activate the registered user.

@@ -18,7 +18,7 @@ public class ExternalAccount implements Serializable {
 
     <% if (databaseType == 'sql') { %>
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "external_account_id")
     private Long id;<% } %>
 

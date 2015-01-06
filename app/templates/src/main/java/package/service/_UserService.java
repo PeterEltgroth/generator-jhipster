@@ -73,6 +73,16 @@ public class UserService {
         return user;
     }<% } %>
 
+    void checkForDuplicateUser(User user) {
+
+        if (userRepository.findOneByLogin(user.getLogin()).isPresent()) {
+            throw new RegistrationException("login already in use");
+        }
+        else if (userRepository.findOneByEmail(user.getEmail()).isPresent()) {
+            new RegistrationException("e-mail address already in use");
+        }
+    }
+
     User createUserInformation(String login, String password, String firstName, String lastName,
                                String email, String langKey, ExternalAccount externalAccount) {
         User newUser = new User();
@@ -101,6 +111,7 @@ public class UserService {
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
 
+        checkForDuplicateUser(newUser);
         userRepository.save(newUser);
         log.debug("Created Information for User: {}", newUser);
         return newUser;
